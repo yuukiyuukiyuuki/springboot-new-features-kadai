@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.samuraitravel.entity.House;
 import com.example.samuraitravel.entity.Review;
+import com.example.samuraitravel.entity.User;
 import com.example.samuraitravel.form.ReservationInputForm;
 import com.example.samuraitravel.repository.FavoriteRepository;
 import com.example.samuraitravel.repository.HouseRepository;
@@ -25,10 +26,13 @@ import com.example.samuraitravel.security.UserDetailsImpl;
 public class HouseController {
 	private final HouseRepository houseRepository;
 	private final ReviewRepository reviewRepository;
+	private final FavoriteRepository favoriteRepository;
 
-	public HouseController(HouseRepository houseRepository,ReviewRepository reviewRepository) {
+	public HouseController(HouseRepository houseRepository, ReviewRepository reviewRepository,
+			FavoriteRepository favoriteRepository) {
 		this.houseRepository = houseRepository;
 		this.reviewRepository = reviewRepository;
+		this.favoriteRepository = favoriteRepository;
 	}
 
 	@GetMapping
@@ -49,21 +53,21 @@ public class HouseController {
 				housePage = houseRepository.findByNameLikeOrAddressLikeOrderByCreatedAtDesc("%" + keyword + "%",
 						"%" + keyword + "%", pageable);
 			}
-		//エリアによる検索
+			//エリアによる検索
 		} else if (area != null && !area.isEmpty()) {
 			if (order != null && order.equals("priceAsc")) {
 				housePage = houseRepository.findByAddressLikeOrderByPriceAsc("%" + area + "%", pageable);
 			} else {
 				housePage = houseRepository.findByAddressLikeOrderByCreatedAtDesc("%" + area + "%", pageable);
 			}
-		//価格による検索
+			//価格による検索
 		} else if (price != null) {
 			if (order != null && order.equals("priceAsc")) {
 				housePage = houseRepository.findByPriceLessThanEqualOrderByPriceAsc(price, pageable);
 			} else {
 				housePage = houseRepository.findByPriceLessThanEqualOrderByCreatedAtDesc(price, pageable);
 			}
-		//その他
+			//その他
 		} else {
 			if (order != null && order.equals("priceAsc")) {
 				housePage = houseRepository.findAllByOrderByPriceAsc(pageable);
@@ -80,31 +84,31 @@ public class HouseController {
 
 		return "houses/index";
 	}
-	
-
 
 	@GetMapping("/{id}")
-	public String show(@PathVariable(name = "id") Integer id, FavoriteRepository favoriteRepository, Model model, @PageableDefault(page = 0, size = 6, sort = "id", direction = Direction.ASC) Pageable pageable, @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
-		/*	    if (userDetailsImpl == null) {
-		    // ユーザーが未認証の場合の処理、例えばログインページへリダイレクト
-		    return "redirect:/login";
-		}*/
-	    //if文で条件分岐
-	    
-		/* User user = userDetailsImpl.getUser();*/
+	public String show(@PathVariable(name = "id") Integer id, Model model,
+	                   @PageableDefault(page = 0, size = 6, sort = "id", direction = Direction.ASC) Pageable pageable,
+	                   @AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
+		// ユーザーが未認証の場合の処理、例えばログインページへリダイレクト
+	    if (userDetailsImpl == null) {
+	        return "redirect:/login";
+	    }
+
+	    User user = userDetailsImpl.getUser();
 	    House house = houseRepository.getReferenceById(id);
 	    Page<Review> reviewPage = reviewRepository.findAll(pageable);
 	    Review review = reviewRepository.getReferenceById(id);
 	    ReservationInputForm reservationInputForm = new ReservationInputForm();
 
+	    boolean favoriteExists = favoriteRepository.existsByHouseIdAndUserId(house.getId(), user.getId());
+	    model.addAttribute("favoriteExists", favoriteExists);
 	    model.addAttribute("reviewPage", reviewPage);
 	    model.addAttribute("house", house);
 	    model.addAttribute("reservationInputForm", reservationInputForm);
 	    model.addAttribute("review", review);
-		/* model.addAttribute("user", user);*/
+	    model.addAttribute("user", user);
 
 	    return "houses/show";
 	}
-
 
 }
