@@ -42,7 +42,7 @@ public class FavoriteController {
 
         favoriteService.create(house, user);
         Boolean favoriteExists = favoriteRepository.existsByHouseIdAndUserId(houseId, userId);
-        favoriteExists = favoriteExists != null ? favoriteExists : false; // nullチェックとデフォルト値の設定
+//        favoriteExists = favoriteExists != null ? favoriteExists : false; // nullチェックとデフォルト値の設定
         redirectAttributes.addFlashAttribute("favoriteExists", favoriteExists);
         redirectAttributes.addFlashAttribute("message", "お気に入りに追加しました");
         return "redirect:/houses/{id}";
@@ -56,12 +56,12 @@ public class FavoriteController {
         redirectAttributes.addFlashAttribute("message", "お気に入りを解除しました");
         return "redirect:/houses/{id}";
     }
-    
+    // お気に入り一覧
     @GetMapping("/favorites")
     public String showFavorites(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails, @PageableDefault(size = 10) Pageable pageable) {
         User user = userDetails.getUser();
         Page<Favorite> favorites = favoriteRepository.findByUser(user, pageable);
         model.addAttribute("favoritesPage", favorites);
-        return "favorites/index"; // お気に入り一覧
+        return "favorites/index"; 
     }
 }
