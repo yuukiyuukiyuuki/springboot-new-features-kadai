@@ -29,24 +29,25 @@
 						<!-- お気に入り -->
 						<div sec:authorize="isAuthenticated()">
 							<!-- お気に入り追加 -->
-							<div th:if="${favoriteExists != null ? !favoriteExists : true}"> 
+							<div th:if="${not favoriteExists}">
 								<form id="favoriteAddForm" style="display: inline;" method="post"
-									th:action="@{/houses/__${house.getId()}__/create}">
-									<input type="hidden" name="houseId" th:value="${house.getId()}">
+									th:action="@{/houses/__${house.id}__/create}">
+									<input type="hidden" name="houseId" th:value="${house.id}">
 									<input type="hidden" name="userId" th:value="${#authentication.principal.user.id}">
 									<button type="submit" class="btn btn-link">&#9825; お気に入り追加</button>
 								</form>
 							</div>
 							<!-- お気に入り解除 -->
-							<div th:if="${favoriteExists != null ? favoriteExists : false}"> 
+							<div th:if="${favoriteExists}">
 								<form id="favoriteRemoveForm" style="display: inline;" method="post"
-									th:action="@{/houses/__${house.getId()}__/delete}">
-									<input type="hidden" name="houseId" th:value="${house.getId()}">
+									th:action="@{/houses/__${house.id}__/delete}">
+									<input type="hidden" name="houseId" th:value="${house.id}">
 									<input type="hidden" name="userId" th:value="${#authentication.principal.user.id}">
 									<button type="submit" class="btn btn-link">&#9829; お気に入り解除</button>
 								</form>
 							</div>
 						</div>
+
 						<h1 class="mb-4 text-center" th:text="${house.getName()}"></h1>
 
 						<div th:if="${errorMessage}" class="alert alert-danger">
